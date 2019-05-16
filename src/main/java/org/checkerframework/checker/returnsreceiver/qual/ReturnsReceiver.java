@@ -1,4 +1,4 @@
-package org.checkerframework.checker.builder.qual;
+package org.checkerframework.checker.returnsreceiver.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;

@@ -1,13 +1,14 @@
 import java.io.File;
 import java.util.List;
 
+import org.checkerframework.checker.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 public class RetrevTest extends CheckerFrameworkPerDirectoryTest{
 	public RetrevTest(List<File> testFiles) {
 		super(testFiles,
-				org.checkerframework.checker.builder.ReturnsReceiverChecker.class,
+				ReturnsReceiverChecker.class,
 				"returnsreceiver",
 				"-Anomsgtext",
 				"-nowarn"

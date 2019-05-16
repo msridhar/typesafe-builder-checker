@@ -1,12 +1,13 @@
-package org.checkerframework.checker.builder;
+package org.checkerframework.checker.returnsreceiver;
 
+import org.checkerframework.checker.builder.TypesafeBuilderAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 
 import com.sun.source.tree.ReturnTree;
 
-public class ReturnsReceiverVistor extends BaseTypeVisitor<TypesafeBuilderAnnotatedTypeFactory>{
+public class ReturnsReceiverVistor extends BaseTypeVisitor<ReturnsReceiverAnnotatedTypeFactory>{
 
 	public ReturnsReceiverVistor(BaseTypeChecker checker) {
 		super(checker);

@@ -6,7 +6,7 @@ import org.checkerframework.checker.builder.qual.CalledMethods;
 import org.checkerframework.checker.builder.qual.CalledMethodsBottom;
 import org.checkerframework.checker.builder.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.builder.qual.CalledMethodsTop;
-import org.checkerframework.checker.builder.qual.ReturnsReceiver;
+import org.checkerframework.checker.returnsreceiver.qual.ReturnsReceiver;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
