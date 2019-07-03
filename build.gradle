@@ -25,21 +25,21 @@ sourceCompatibility = 1.8
 
 dependencies {
     // This dependency is found on compile classpath of this component and consumers.
-    implementation 'org.checkerframework:checker:2.8.1'
+    implementation 'io.github.eisop:checker:3.0.0-b2'
 
     // For the @CalledMethodsPredicate evaluation
     implementation 'org.springframework:spring-expression:5.1.7.RELEASE'
     
     // For returns receiver checking. The first uses the master branch; the second
     // uses your local copy.
-    implementation 'com.github.msridhar:returnsrecv-checker:master-SNAPSHOT'
+    implementation 'com.github.msridhar:returnsrecv-checker:jdk11-SNAPSHOT'
     // implementation 'org.checkerframework:returnsrcvr-checker:0.1-SNAPSHOT'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 
     // CF testing infrastructure
-    testCompile 'org.checkerframework:testlib:2.5.4'
+    testCompile 'io.github.eisop:framework-test:3.0.0-b2'
 
     // For CVE tests
     testCompile 'com.amazonaws:aws-java-sdk-ec2'
