@@ -2,6 +2,7 @@ package org.checkerframework.checker.returnsrcvr;
 
 import com.google.auto.value.AutoValue;
 import java.lang.annotation.Annotation;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -9,6 +10,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.returnsrcvr.qual.BottomThis;
 import org.checkerframework.checker.returnsrcvr.qual.MaybeThis;
 import org.checkerframework.checker.returnsrcvr.qual.This;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -30,6 +32,11 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     THIS_ANNOT = AnnotationBuilder.fromClass(elements, This.class);
     // we have to call this explicitly
     this.postInit();
+  }
+
+  @Override
+  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+    return getBundledTypeQualifiersWithoutPolyAll(BottomThis.class, MaybeThis.class, This.class);
   }
 
   @Override
