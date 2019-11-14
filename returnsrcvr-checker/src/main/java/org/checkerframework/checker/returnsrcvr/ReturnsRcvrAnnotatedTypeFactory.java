@@ -36,7 +36,7 @@ public class ReturnsRcvrAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiersWithoutPolyAll(BottomThis.class, MaybeThis.class, This.class);
+    return getBundledTypeQualifiersWithPolyAll(BottomThis.class, MaybeThis.class, This.class);
   }
 
   @Override
