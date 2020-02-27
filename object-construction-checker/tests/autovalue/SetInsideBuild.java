@@ -14,7 +14,7 @@ abstract class SetInsideBuild {
         abstract Builder setName(String name);
         abstract Builder setSize(int value);
         abstract SetInsideBuild autoBuild();
-        public SetInsideBuild build(Builder this) {
+        public SetInsideBuild build(@CalledMethods({}) Builder this) {
             // :: error: finalizer.invocation.invalid
             return this.setSize(4).autoBuild(); // error here
         }

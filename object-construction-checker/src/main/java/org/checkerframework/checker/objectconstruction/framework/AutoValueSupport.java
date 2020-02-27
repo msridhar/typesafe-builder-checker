@@ -76,8 +76,8 @@ public class AutoValueSupport implements FrameworkSupport {
           : "class " + nextEnclosingElement.getSimpleName() + " is missing @AutoValue annotation";
       // it is a build method if it is an abstract method that returns the type with the @AutoValue
       // annotation
-      if (element.getModifiers().contains(Modifier.ABSTRACT)
-          && TypesUtils.getTypeElement(element.getReturnType()).equals(nextEnclosingElement)) {
+      if (/*element.getModifiers().contains(Modifier.ABSTRACT)
+          && */TypesUtils.getTypeElement(element.getReturnType()).equals(nextEnclosingElement)) {
         return true;
       }
     }
