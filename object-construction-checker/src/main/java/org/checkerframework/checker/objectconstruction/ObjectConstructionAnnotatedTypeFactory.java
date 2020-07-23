@@ -523,15 +523,16 @@ public class ObjectConstructionAnnotatedTypeFactory extends BaseAnnotatedTypeFac
 
     } else if (annotatedTypeMirror != null) {
 
+      throw new RuntimeException("weird case!!  store after block has no type for " + assign.first);
       // Sometimes getStoreAfter doesn't contain correct set of local variable nodes! Then, it
       // checks
       // the AlwaysCall condition by looking at AnnotatedTypeMirror
-      AnnotationMirror annotationMirror = annotatedTypeMirror.getAnnotation(CalledMethods.class);
-
-      if (annotationMirror != null
-          && getValueOfAnnotationWithStringArgument(annotationMirror).contains(alwaysCallValue)) {
-        report = false;
-      }
+//      AnnotationMirror annotationMirror = annotatedTypeMirror.getAnnotation(CalledMethods.class);
+//
+//      if (annotationMirror != null
+//          && getValueOfAnnotationWithStringArgument(annotationMirror).contains(alwaysCallValue)) {
+//        report = false;
+//      }
     }
 
     if (report) {
