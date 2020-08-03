@@ -604,9 +604,7 @@ public class ObjectConstructionAnnotatedTypeFactory extends BaseAnnotatedTypeFac
    * fails.
    */
   private void checkAlwaysCall(
-      Pair<LocalVariable, Tree> assign,
-      CFStore store,
-      AnnotatedTypeMirror annotatedTypeMirror) {
+      Pair<LocalVariable, Tree> assign, CFStore store, AnnotatedTypeMirror annotatedTypeMirror) {
 
     CFValue lhsCFValue = store.getValue(assign.first);
     String alwaysCallValue = getAlwaysCallValue(assign.first.getElement());
