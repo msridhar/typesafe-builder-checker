@@ -35,6 +35,7 @@ import org.checkerframework.checker.builder.qual.ReturnsReceiver;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.qual.MustCall;
+import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.objectconstruction.framework.AutoValueSupport;
 import org.checkerframework.checker.objectconstruction.framework.FrameworkSupport;
@@ -403,7 +404,7 @@ public class ObjectConstructionAnnotatedTypeFactory extends BaseAnnotatedTypeFac
           }
         }
 
-        if (node instanceof AssignmentNode) {
+        if (node instanceof AssignmentNode && !getMustCallValue(node.getTree()).isEmpty()) {
           Node lhs = ((AssignmentNode) node).getTarget();
           Node rhs = ((AssignmentNode) node).getExpression();
 
@@ -429,9 +430,34 @@ public class ObjectConstructionAnnotatedTypeFactory extends BaseAnnotatedTypeFac
             // the AssignmentNode to the newDefs.
             if ((rhs instanceof ObjectCreationNode)
                 || (rhs instanceof MethodInvocationNode && !hasNotOwningAnno(rhs))) {
-              newDefs.add(
-                  new LocalVarWithAssignTree(
-                      new LocalVariable((LocalVariableNode) lhs), node.getTree()));
+              AnnotatedExecutableType methodType =
+                  (AnnotatedExecutableType)
+                      getTypeFactoryOfSubchecker(MustCallChecker.class)
+                          .getAnnotatedType(TreeUtils.elementFromTree(rhs.getTree()));
+              if (methodType.getReturnType().getAnnotation(PolyMustCall.class) != null) {
+                // for @PolyMustCall returns, check that the corresponding actual parameter is
+                // @Owning
+                // TODO check receiver
+                List<AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
+                for (int i = 0; i < paramTypes.size(); i++) {
+                  if (paramTypes.get(i).getAnnotation(PolyMustCall.class) != null) {
+                    ExpressionTree actualParam =
+                        rhs instanceof ObjectCreationNode
+                            ? ((ObjectCreationNode) rhs).getTree().getArguments().get(i)
+                            : ((MethodInvocationNode) rhs).getTree().getArguments().get(i);
+                    if (mayBeOwning(actualParam, newDefs)) {
+                      newDefs.add(
+                          new LocalVarWithAssignTree(
+                              new LocalVariable((LocalVariableNode) lhs), node.getTree()));
+                    }
+                    break;
+                  }
+                }
+              } else {
+                newDefs.add(
+                    new LocalVarWithAssignTree(
+                        new LocalVariable((LocalVariableNode) lhs), node.getTree()));
+              }
             }
 
             // Ownership Transfer
@@ -551,6 +577,25 @@ public class ObjectConstructionAnnotatedTypeFactory extends BaseAnnotatedTypeFac
         newDefs.removeAll(toRemove);
         propagate(new BlockWithLocals(succ, newDefs), visited, worklist);
       }
+    }
+  }
+
+  private boolean mayBeOwning(ExpressionTree expr, Set<LocalVarWithAssignTree> defs) {
+    Element element = TreeUtils.elementFromTree(expr);
+    switch (element.getKind()) {
+      case FIELD:
+        // even for @Owning fields, we always require it be closed directly, so this can never be
+        // relevant
+        return false;
+      case METHOD:
+        return getDeclAnnotation(element, NotOwning.class) == null;
+      case PARAMETER:
+        return element.getAnnotation(Owning.class) != null;
+      case LOCAL_VARIABLE:
+        // are we tracking it in defs?
+        return defs.stream().map(assign -> assign.localVar.getElement()).anyMatch(element::equals);
+      default:
+        return true;
     }
   }
 
