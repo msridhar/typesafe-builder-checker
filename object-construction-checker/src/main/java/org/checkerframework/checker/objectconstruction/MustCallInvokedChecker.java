@@ -1,5 +1,6 @@
 package org.checkerframework.checker.objectconstruction;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -21,6 +22,8 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.mustcall.MustCallChecker;
+import org.checkerframework.checker.mustcall.qual.PolyMustCall;
 import org.checkerframework.checker.objectconstruction.qual.NotOwning;
 import org.checkerframework.checker.objectconstruction.qual.Owning;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
@@ -41,6 +44,7 @@ import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
@@ -238,8 +242,34 @@ class MustCallInvokedChecker {
       if ((rhs instanceof ObjectCreationNode)
           || (rhs instanceof MethodInvocationNode
               && !hasNotOwningReturnType((MethodInvocationNode) rhs))) {
-        newDefs.add(
-            new LocalVarWithTree(new LocalVariable((LocalVariableNode) lhs), node.getTree()));
+        AnnotatedTypeMirror.AnnotatedExecutableType methodType =
+            (AnnotatedTypeMirror.AnnotatedExecutableType)
+                typeFactory
+                    .getTypeFactoryOfSubchecker(MustCallChecker.class)
+                    .getAnnotatedType(TreeUtils.elementFromTree(rhs.getTree()));
+        if (methodType.getReturnType().getAnnotation(PolyMustCall.class) != null) {
+          // for @PolyMustCall returns, check that the corresponding actual parameter is
+          // @Owning
+          // TODO check receiver
+          List<AnnotatedTypeMirror> paramTypes = methodType.getParameterTypes();
+          for (int i = 0; i < paramTypes.size(); i++) {
+            if (paramTypes.get(i).getAnnotation(PolyMustCall.class) != null) {
+              ExpressionTree actualParam =
+                  rhs instanceof ObjectCreationNode
+                      ? ((ObjectCreationNode) rhs).getTree().getArguments().get(i)
+                      : ((MethodInvocationNode) rhs).getTree().getArguments().get(i);
+              if (mayBeOwning(actualParam, newDefs)) {
+                newDefs.add(
+                    new LocalVarWithTree(
+                        new LocalVariable((LocalVariableNode) lhs), node.getTree()));
+              }
+              break;
+            }
+          }
+        } else {
+          newDefs.add(
+              new LocalVarWithTree(new LocalVariable((LocalVariableNode) lhs), node.getTree()));
+        }
       }
 
       // Ownership Transfer
@@ -251,6 +281,27 @@ class MustCallInvokedChecker {
             new LocalVarWithTree(new LocalVariable((LocalVariableNode) lhs), node.getTree()));
         newDefs.remove(getAssignmentTreeOfVar(newDefs, (LocalVariableNode) rhs));
       }
+    }
+  }
+
+  private boolean mayBeOwning(ExpressionTree expr, Set<LocalVarWithTree> defs) {
+    Element element = TreeUtils.elementFromTree(expr);
+    switch (element.getKind()) {
+      case FIELD:
+        // even for @Owning fields, we always require it be closed directly, so this can never be
+        // relevant
+        return false;
+      case METHOD:
+        return typeFactory.getDeclAnnotation(element, NotOwning.class) == null;
+      case PARAMETER:
+        return element.getAnnotation(Owning.class) != null;
+      case LOCAL_VARIABLE:
+        // are we tracking it in defs?
+        // TODO ownership may have already been transferred at previous node for the call!  look for
+        // predecessor???
+        return defs.stream().map(assign -> assign.localVar.getElement()).anyMatch(element::equals);
+      default:
+        return true;
     }
   }
 
