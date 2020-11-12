@@ -53,6 +53,7 @@ import org.checkerframework.javacutil.TreeUtils;
 class MustCallInvokedChecker {
 
   /** By default, should we transfer ownership to the caller when a variable is returned? */
+  /* package-private */
   static final boolean TRANSFER_OWNERSHIP_AT_RETURN = true;
 
   /** {@code @MustCall} errors reported thus far, to avoid duplicates */
@@ -208,6 +209,10 @@ class MustCallInvokedChecker {
   }
 
   private void handleAssignment(AssignmentNode node, Set<LocalVarWithTree> newDefs) {
+    // optimization: if the assignment has nothing to do with must-call, skip it
+    if (typeFactory.getMustCallValue(node.getTree()).isEmpty()) {
+      return;
+    }
     Node lhs = node.getTarget();
     Node rhs = node.getExpression();
 
