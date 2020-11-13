@@ -46,6 +46,7 @@ class WrapperStreamPoly {
         try {
             DataOutputStream dout123 = null;
             BufferedOutputStream buf123 = new BufferedOutputStream(sock.getOutputStream());
+            // :: error: required.method.not.called
             dout123 = new DataOutputStream(buf123);
         } finally {
             sock.close();
